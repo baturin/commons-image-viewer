@@ -36,6 +36,18 @@ function walkTree(startNode, walkNodeFunction, onSuccess) {
     });
 }
 
+log = {
+    init: function() {
+        this.logControl = $('#log');
+        this.logControl.val('');
+    },
+    info: function(message) {
+        this.logControl.val(
+            this.logControl.val() + message + "\n"
+        );
+        this.logControl.scrollTop(this.logControl[0].scrollHeight);
+    }
+};
 
 commonsApi = {
     baseUrl: 'https://commons.wikimedia.org/w/api.php',
@@ -52,6 +64,8 @@ commonsApi = {
     },
 
     getSubcategories: function(category, onSuccess) {
+        log.info('Get subcategories of category "' + category + '"');
+
         this.executeRequest(
             {
                 'action': 'query',
@@ -99,6 +113,8 @@ commonsApi = {
     },
 
     getCategoryFiles: function(category, limit, onSuccess) {
+        log.info('Get files of category "' + category + '"');
+
         this.executeRequest(
             {
                 'action': 'query',
@@ -137,6 +153,8 @@ commonsApi = {
     },
 
     getImageInfo: function(image, onSuccess) {
+        log.info('Get image info of "' + image + '"');
+
         this.executeRequest(
             {
                 'action': 'query',
@@ -338,6 +356,7 @@ wikivoyageApi = {
     },
 
     getPage: function(page, onSuccess) {
+        log.info('Get Wikivoyage page "' + page + '"');
         this.executeRequest(
             {
                 'action': 'query',
@@ -378,6 +397,7 @@ function parseCategoryIds(pageContents)
 }
 
 $.when( $.ready ).then(function() {
+    log.init();
     $('#setCategory').click(function() { application.updateCategory(); });
     $('#setNature').click(function() { application.updateNature(); });
     $('#setCulture').click(function() { application.updateCulture(); });

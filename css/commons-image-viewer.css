@@ -1,0 +1,17 @@
+#page-contents-block {
+    display: flex;
+    flex-direction: row;
+}
+#left-block {
+    padding: 20px;
+}
+#images-block {
+    padding: 20px;
+}
+#log {
+    background-color: black;
+    color: #cccccc;
+    font-family: monospace, serif;
+    font-size: 8pt;
+    height: 200px;
+}

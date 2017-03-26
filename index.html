@@ -8,22 +8,56 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="css/bootstrap.min.css" rel="stylesheet">
+        <link href="css/commons-image-viewer.css" rel="stylesheet">
     </head>
     <body>
         <script src="js/bootstrap.min.js"></script>
-
-        <div>
-            <input type="text" id="category" value="Akademgorodok_(Novosibirsk)" style="width: 300px">
-            <input type="button" id="setCategory" value="Submit">
-            <input type="text" id="nature" value="Алтай" style="width: 300px">
-            <input type="button" id="setNature" value="Submit">
-            <input type="text" id="culture" value="Новосибирская_область/Новосибирск" style="width: 300px">
-            <input type="button" id="setCulture" value="Submit">
+        <div id="page-contents-block">
+            <div id="left-block">
+                <div id="buttons-block">
+                    <div>
+                        <div class="form-group">
+                            <label for="category">Категория Commons:</label>
+                            <input type="text" id="category" name="category" class="form-control" value="Akademgorodok_(Novosibirsk)" style="width: 300px">
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary" id="setCategory">Просмотреть изображения</button>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div>
+                        <div class="form-group">
+                            <label for="nature">Природные памятники:</label>
+                            <input type="text" id="nature" name="nature" class="form-control" value="Алтай" style="width: 300px">
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary" id="setNature">Просмотреть изображения</button>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div>
+                        <div class="form-group">
+                            <label for="culture">Культурное наследие</label>
+                            <input type="text" id="culture" name="culture" class="form-control" value="Новосибирская_область/Новосибирск" style="width: 300px">
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary" id="setCulture">Просмотреть изображения</button>
+                        </div>
+                    </div>
+                    <hr/>
+                </div>
+                <div id="log-block">
+                    <div class="form-group">
+                        <label for="log">Лог</label>
+                        <textarea name="log" id="log" class="form-control" readonly="readonly"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div id="images-block">
+                <ul class="pagination" id="paginator" style="margin: 5px; 0px;"></ul>
+                <div id="images"></div>
+            </div>
         </div>
-
-        <ul class="pagination" id="paginator" style="margin: 5px; 0px;"></ul>
-
-        <div id="images"></div>
     </body>
 </html>
 
