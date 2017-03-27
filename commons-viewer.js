@@ -66,31 +66,35 @@ commonsApi = {
     getSubcategories: function(category, onSuccess) {
         log.info('Get subcategories of category "' + category + '"');
 
-        this.executeRequest(
-            {
-                'action': 'query',
-                'list': 'categorymembers',
-                'cmtype': 'subcat',
-                'cmtitle': 'Category:' + category,
-                'cmlimit': 'max',
-                'format': 'json'
-            },
-            function(data) {
-                if (data.query && data.query.categorymembers) {
-                    var subcategories = [];
-                    data.query.categorymembers.forEach(function(member) {
-                        if (member.title) {
-                            var subcategory = stripPrefix(member.title, 'Category:');
-                            if (subcategory) {
-                                subcategories.push(subcategory);
-                            }
-                        }
-                    });
+        var self = this;
 
-                    onSuccess(subcategories);
+        getCachedValue('subcategories', category, onSuccess, function(category, onSuccess) {
+            self.executeRequest(
+                {
+                    'action': 'query',
+                    'list': 'categorymembers',
+                    'cmtype': 'subcat',
+                    'cmtitle': 'Category:' + category,
+                    'cmlimit': 'max',
+                    'format': 'json'
+                },
+                function(data) {
+                    if (data.query && data.query.categorymembers) {
+                        var subcategories = [];
+                        data.query.categorymembers.forEach(function(member) {
+                            if (member.title) {
+                                var subcategory = stripPrefix(member.title, 'Category:');
+                                if (subcategory) {
+                                    subcategories.push(subcategory);
+                                }
+                            }
+                        });
+
+                        onSuccess(subcategories);
+                    }
                 }
-            }
-        );
+            );
+        });
     },
 
     getAllSubcategories: function(category, onSuccess) {
@@ -115,28 +119,32 @@ commonsApi = {
     getCategoryFiles: function(category, limit, onSuccess) {
         log.info('Get files of category "' + category + '"');
 
-        this.executeRequest(
-            {
-                'action': 'query',
-                'list': 'categorymembers',
-                'cmtype': 'file',
-                'cmtitle': 'Category:' + category,
-                'cmlimit': limit,
-                'format': 'json'
-            },
-            function(data) {
-                if (data.query && data.query.categorymembers) {
-                    var files = [];
-                    data.query.categorymembers.forEach(function(member) {
-                        if (member.title) {
-                            files.push(member.title);
-                        }
-                    });
+        var self = this;
 
-                    onSuccess(files);
+        getCachedValue('category-files', category, onSuccess, function(category, onSuccess) {
+            self.executeRequest(
+                {
+                    'action': 'query',
+                    'list': 'categorymembers',
+                    'cmtype': 'file',
+                    'cmtitle': 'Category:' + category,
+                    'cmlimit': 'max',
+                    'format': 'json'
+                },
+                function(data) {
+                    if (data.query && data.query.categorymembers) {
+                        var files = [];
+                        data.query.categorymembers.forEach(function(member) {
+                            if (member.title) {
+                                files.push(member.title);
+                            }
+                        });
+
+                        onSuccess(files);
+                    }
                 }
-            }
-        );
+            );
+        });
     },
 
     getCategoryImages: function(category, limit, onSucess) {
@@ -155,33 +163,37 @@ commonsApi = {
     getImageInfo: function(image, onSuccess) {
         log.info('Get image info of "' + image + '"');
 
-        this.executeRequest(
-            {
-                'action': 'query',
-                'titles': image,
-                'prop': 'imageinfo',
-                'iiprop': 'url',
-                'iiurlwidth': '200',
-                'iiurlheight': '200',
-                'format': 'json'
-            },
-            function(data) {
-                if (!data.query || !data.query.pages) {
-                    return;
-                }
+        var self = this;
 
-                var pages = data.query.pages;
-                var firstPage = pages[Object.keys(pages)[0]];
-                if (!firstPage || !firstPage.imageinfo || firstPage.imageinfo.length <= 0) {
-                    return;
+        getCachedValue('image-info', image, onSuccess, function(image, onSuccess) {
+            self.executeRequest(
+                {
+                    'action': 'query',
+                    'titles': image,
+                    'prop': 'imageinfo',
+                    'iiprop': 'url',
+                    'iiurlwidth': '200',
+                    'iiurlheight': '200',
+                    'format': 'json'
+                },
+                function(data) {
+                    if (!data.query || !data.query.pages) {
+                        return;
+                    }
+
+                    var pages = data.query.pages;
+                    var firstPage = pages[Object.keys(pages)[0]];
+                    if (!firstPage || !firstPage.imageinfo || firstPage.imageinfo.length <= 0) {
+                        return;
+                    }
+                    var imageInfo = firstPage.imageinfo[0];
+                    onSuccess({
+                        'thumb': imageInfo.thumburl,
+                        'url': imageInfo.url
+                    });
                 }
-                var imageInfo = firstPage.imageinfo[0];
-                onSuccess({
-                    'thumb': imageInfo.thumburl,
-                    'url': imageInfo.url
-                });
-            }
-        )
+            )
+        });
     },
 
     getImagesInfo: function(images, onSuccess) {
@@ -382,6 +394,26 @@ wikivoyageApi = {
         )
     }
 };
+
+cacheStorage = {
+
+};
+
+function getCachedValue(cacheId, key, onSuccess, fn) {
+    if (!cacheStorage[cacheId]) {
+        cacheStorage[cacheId] = {};
+    }
+    var cache = cacheStorage[cacheId];
+
+    if (cache[key]) {
+        onSuccess(cache[key]);
+    } else {
+        fn(key, function(result) {
+            cache[key] = result;
+            onSuccess(result);
+        });
+    }
+}
 
 function parseCategoryIds(pageContents)
 {
