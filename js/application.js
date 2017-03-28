@@ -4,6 +4,7 @@ application = {
     _currentPage: 0,
     _itemsPerPage: 64,
     _itemsPerRow: 4,
+    _paginationListItems: {},
 
     updateCategory: function() {
         var self = this;
@@ -95,18 +96,26 @@ application = {
     },
 
     _updatePaginator: function() {
+        var self = this;
+        this._paginationListItems = {};
+
         var paginator = $('#paginator');
         paginator.html('');
         for (var i = 0; i < this._currentImages.length / this._itemsPerPage; i++) {
+            this._paginationListItems[i] = [];
+
             var addPaginatorLink = function(pageNum) {
                 var link = $('<a>', {'href': 'javascript:;'});
                 link.html((pageNum + 1));
-                link.click(function () {
-                    application.setPage(pageNum);
-                });
                 var listItem = $('<li>');
                 listItem.append(link);
                 paginator.append(listItem);
+
+                self._paginationListItems[pageNum].push(listItem);
+
+                link.click(function () {
+                    application.setPage(pageNum);
+                });
             };
             addPaginatorLink(i);
         }
@@ -115,6 +124,21 @@ application = {
     setPage: function(page) {
         var self = this;
         this._currentPage = page;
+
+        // 1) Update pagination
+        Object.keys(this._paginationListItems).forEach(function(paginationPage) {
+            if (parseInt(paginationPage) === page) {
+                self._paginationListItems[paginationPage].forEach(function(paginationListItem) {
+                    paginationListItem.addClass('active');
+                });
+            } else {
+                self._paginationListItems[paginationPage].forEach(function(paginationListItem) {
+                    paginationListItem.removeClass('active');
+                });
+            }
+        });
+
+        // 2) Load images
         var imagesBlock = $('#images');
         imagesBlock.html('Loading images info...');
 
