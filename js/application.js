@@ -7,13 +7,18 @@ application = {
 
     updateCategory: function() {
         var self = this;
+        var category = getCurrentCategory()
         $('#images').html('Loading list of images...');
-        commonsApi.getAllSubcategories(getCurrentCategory(), function(subcategories) {
+        commonsApi.getAllSubcategories(category, function(subcategories) {
+            var allCategories = [];
+            allCategories = allCategories.concat([category]);
+            allCategories = allCategories.concat(subcategories)
+
             self._currentImages = [];
             runSequence(
-                subcategories.map(function(subcategory) {
+                allCategories.map(function(category) {
                     return function(onSuccess) {
-                        commonsApi.getCategoryImages(subcategory, 'max', function (images) {
+                        commonsApi.getCategoryImages(category, 'max', function (images) {
                             images.forEach(function(image) {
                                 self._currentImages.push(image);
                             });
