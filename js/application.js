@@ -160,6 +160,7 @@ $.when( $.ready ).then(function() {
     $('#setCategory').click(function() { application.updateCategory(); });
     $('#setNature').click(function() { application.updateNature(); });
     $('#setCulture').click(function() { application.updateCulture(); });
+    $('#clearCache').click(function() { cacheStorage.clear(); } );
 });
 
 function getCurrentCategory()
