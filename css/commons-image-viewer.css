@@ -7,6 +7,9 @@
 }
 #images-block {
     padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 #log {
     background-color: black;

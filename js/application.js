@@ -8,12 +8,12 @@ application = {
 
     updateCategory: function() {
         var self = this;
-        var category = getCurrentCategory()
+        var category = getCurrentCategory();
         $('#images').html('Loading list of images...');
         commonsApi.getAllSubcategories(category, function(subcategories) {
             var allCategories = [];
             allCategories = allCategories.concat([category]);
-            allCategories = allCategories.concat(subcategories)
+            allCategories = allCategories.concat(subcategories);
 
             self._currentImages = [];
             runSequence(
@@ -98,27 +98,60 @@ application = {
     _updatePaginator: function() {
         var self = this;
         this._paginationListItems = {};
+        var paginationBlocks = [$('#topPaginator'), $('#bottomPaginator')];
 
-        var paginator = $('#paginator');
-        paginator.html('');
-        for (var i = 0; i < this._currentImages.length / this._itemsPerPage; i++) {
+        paginationBlocks.forEach(function(paginationBlock) {
+            paginationBlock.html('');
+        });
+
+        paginationBlocks.forEach(function(paginationBlock) {
+            var link = $('<a>', {'href': 'javascript:;'});
+            link.html('<');
+            var listItem = $('<li>');
+            listItem.append(link);
+            paginationBlock.append(listItem);
+            link.click(function () {
+                if (self._currentPage > 0) {
+                    application.setPage(self._currentPage - 1);
+                }
+            });
+        });
+
+        var pages = this._currentImages.length / this._itemsPerPage;
+
+        for (var i = 0; i < pages; i++) {
             this._paginationListItems[i] = [];
 
-            var addPaginatorLink = function(pageNum) {
-                var link = $('<a>', {'href': 'javascript:;'});
-                link.html((pageNum + 1));
-                var listItem = $('<li>');
-                listItem.append(link);
-                paginator.append(listItem);
+            paginationBlocks.forEach(function(paginationBlock) {
+                var addPaginatorLink = function (pageNum) {
+                    var link = $('<a>', {'href': 'javascript:;'});
+                    link.html((pageNum + 1));
+                    var listItem = $('<li>');
+                    listItem.append(link);
+                    paginationBlock.append(listItem);
 
-                self._paginationListItems[pageNum].push(listItem);
+                    self._paginationListItems[pageNum].push(listItem);
 
-                link.click(function () {
-                    application.setPage(pageNum);
-                });
-            };
-            addPaginatorLink(i);
+                    link.click(function () {
+                        application.setPage(pageNum);
+                    });
+                };
+                addPaginatorLink(i);
+            });
         }
+
+        paginationBlocks.forEach(function(paginationBlock) {
+            var link = $('<a>', {'href': 'javascript:;'});
+            link.html('>');
+            var listItem = $('<li>');
+            listItem.append(link);
+            paginationBlock.append(listItem);
+            link.click(function () {
+                if (self._currentPage < pages - 1) {
+                    application.setPage(self._currentPage + 1);
+                }
+            });
+        });
     },
 
     setPage: function(page) {
