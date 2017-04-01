@@ -6,16 +6,51 @@ application = {
     _itemsPerRow: 4,
     _paginationListItems: {},
 
-    updateCategory: function() {
+    init: function() {
+        this.bindHandlers();
+    },
+
+    bindHandlers: function() {
         var self = this;
-        var category = getCurrentCategory();
+
+        $('#viewCommonsCategory').click(function() {
+            self.viewCommonsCategory(self._getCurrentCommonsCategory());
+        });
+        $('#addCommonsCategory').click(function() {
+            self.addCommonsCategory(self._getCurrentCommonsCategory());
+        });
+        $('#viewNaturalHeritageCategory').click(function() {
+            self.viewNaturalHeritageCategory(self._getCurrentNaturalHeritageCategory());
+        });
+        $('#addNaturalHeritageCategory').click(function () {
+            self.addNaturalHeritageCategory(self._getCurrentNaturalHeritageCategory());
+        });
+        $('#viewCulturalHeritageCategory').click(function() {
+            self.viewCulturalHeritageCategory(self._getCurrentCulturalHeritageCategory());
+        });
+        $('#addCulturalHerigateCategory').click(function () {
+            self.addCulturalHeritageCategory(self._getCurrentCulturalHeritageCategory());
+        });
+        $('#clearCache').click(function() {
+            cacheStorage.clear();
+        });
+    },
+
+    /**
+     * Add images of specified category and all subcategories to the list of images.
+     *
+     * @param category category name
+     */
+    addCommonsCategory: function(category) {
+        var self = this;
+
         $('#images').html('Loading list of images...');
+
         commonsApi.getAllSubcategories(category, function(subcategories) {
             var allCategories = [];
             allCategories = allCategories.concat([category]);
             allCategories = allCategories.concat(subcategories);
 
-            self._currentImages = [];
             runSequence(
                 allCategories.map(function(category) {
                     return function(onSuccess) {
@@ -36,13 +71,27 @@ application = {
         });
     },
 
-    updateNature: function() {
+    /**
+     * View images of specified category and all subcategories.
+     *
+     * @param category category name
+     */
+    viewCommonsCategory: function(category) {
+        this._currentImages = [];
+        this.addCommonsCategory(category);
+    },
+
+    /**
+     * Add images of specified natural heritage category (Wikivoyage page) to the list of images.
+     *
+     * @param category category name (Wikivoyage page name)
+     */
+    addNaturalHeritageCategory: function(category) {
         var self = this;
         wikivoyageApi.getPage(
-            'Природные_памятники_России/' + getCurrentNature(),
+            'Природные_памятники_России/' + category,
             function(data) {
-                var categoryIds = parseCategoryIds(data);
-                self._currentImages = [];
+                var categoryIds = self.parseCategoryIds(data);
                 runSequence(
                     categoryIds.map(function(categoryId) {
                         return function(onSuccess) {
@@ -66,13 +115,27 @@ application = {
         );
     },
 
-    updateCulture: function() {
+    /**
+     * View images of specified natural heritage category (Wikivoyage page).
+     *
+     * @param category category name (Wikivoyage page name)
+     */
+    viewNaturalHeritageCategory: function(category) {
+        this._currentImages = [];
+        this.addNaturalHeritageCategory(category);
+    },
+
+    /**
+     * Add images of specified cultural heritage category (Wikivoyage page) to the list of images.
+     *
+     * @param category category name (Wikivoyage page name)
+     */
+    addCulturalHeritageCategory: function(category) {
         var self = this;
         wikivoyageApi.getPage(
-            'Культурное_наследие_России/' + getCurrentCulture(),
+            'Культурное_наследие_России/' + category,
             function(data) {
-                var categoryIds = parseCategoryIds(data);
-                self._currentImages = [];
+                var categoryIds = self.parseCategoryIds(data);
                 runSequence(
                     categoryIds.map(function(categoryId) {
                         return function(onSuccess) {
@@ -94,6 +157,16 @@ application = {
                 );
             }
         );
+    },
+
+    /**
+     * View images of specified cultural heritage category (Wikivoyage page).
+     *
+     * @param category category name (Wikivoyage page name)
+     */
+    viewCulturalHeritageCategory: function(category) {
+        this._currentImages = [];
+        this.addCulturalHeritageCategory(category);
     },
 
     _updatePaginator: function() {
@@ -201,42 +274,34 @@ application = {
                 }
             }
         });
+    },
+
+    parseCategoryIds: function(pageContents) {
+        var categoryIds = [];
+        var knidStrs = pageContents.match(/knid\s*=\s*\d+/g);
+        knidStrs.forEach(function(knidStr) {
+            var categoryIdResult = knidStr.match(/\d+/);
+            if (categoryIdResult && categoryIdResult.length > 0) {
+                categoryIds.push(categoryIdResult[0]);
+            }
+        });
+        return categoryIds;
+    },
+
+    _getCurrentCommonsCategory: function() {
+        return $('#commonsCategory').val();
+    },
+
+    _getCurrentNaturalHeritageCategory: function() {
+        return $('#naturalHeritageCategory').val();
+    },
+
+    _getCurrentCulturalHeritageCategory: function() {
+        return $('#culturalHeritageCategory').val();
     }
 };
 
-
-function parseCategoryIds(pageContents)
-{
-    var categoryIds = [];
-    var knidStrs = pageContents.match(/knid\s*=\s*\d+/g);
-    knidStrs.forEach(function(knidStr) {
-        var categoryIdResult = knidStr.match(/\d+/);
-        if (categoryIdResult && categoryIdResult.length > 0) {
-            categoryIds.push(categoryIdResult[0]);
-        }
-    });
-    return categoryIds;
-}
-
-$.when( $.ready ).then(function() {
+$.when($.ready).then(function() {
     log.init();
-    $('#setCategory').click(function() { application.updateCategory(); });
-    $('#setNature').click(function() { application.updateNature(); });
-    $('#setCulture').click(function() { application.updateCulture(); });
-    $('#clearCache').click(function() { cacheStorage.clear(); } );
+    application.init();
 });
-
-function getCurrentCategory()
-{
-    return $('#category').val();
-}
-
-function getCurrentNature()
-{
-    return $('#nature').val();
-}
-
-function getCurrentCulture()
-{
-    return $('#culture').val();
-}
