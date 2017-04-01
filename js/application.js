@@ -264,16 +264,64 @@ application = {
                     var itemNum = row * self._itemsPerRow + col;
                     if (imagesInfo.length > itemNum) {
                         var imageInfo = imagesInfo[itemNum];
-                        var link = $('<a>', {'href': imageInfo.url});
-                        var image = $('<img>', {'src': imageInfo.thumb});
-                        link.append(image);
-                        var imageBlock = $('<div>', {'style': 'padding: 5px; width: 210px; display: flex; flex-direction: row; justify-content: center; align-items: center; align-content: center;'});
-                        imageBlock.append(link);
-                        rowElem.append(imageBlock);
+                        var imageElement = self.createImageElement(imageInfo);
+                        rowElem.append(imageElement);
                     }
                 }
             }
         });
+    },
+
+    createImageElement: function(imageInfo) {
+        var commonsUrl = 'https://commons.wikimedia.org/wiki/' + imageInfo.image;
+        var imgBlock = $('<div>');
+        var link = $('<a>', {'href': commonsUrl, 'target': '_blank'});
+        var image = $('<img>', {'src': imageInfo.thumb});
+        link.append(image);
+        imgBlock.append(link);
+
+        var actions = [
+            {
+                title: 'Смотреть в полном размере',
+                action: function() {
+                    window.open(imageInfo.url);
+                }
+            },
+            {
+                title: 'Смотреть на Commons',
+                action: function() {
+                    window.open(commonsUrl);
+                }
+            }
+        ];
+
+        var actionsList = $('<ul>', {'class': 'dropdown-menu', 'style': 'font-size: 12px;'});
+        actions.forEach(function(action) {
+            var actionListItemLink = $('<a>', {'href': '#'}).append(action.title);
+            actionListItemLink.click(function() {action.action();});
+            var actionListItem = $('<li>').append(actionListItemLink);
+            actionsList.append(actionListItem);
+        });
+
+        var actionsBlock = $('<div>').append(
+            $('<div>', {'class': 'dropdown', 'style': 'margin-top: 5px'})
+                .append(
+                    $('<button>', {
+                        'class': 'btn btn-default btn-xs dropdown-toggle',
+                        'type': 'button',
+                        'data-toggle': 'dropdown',
+                        'aria-haspopup': 'true',
+                        'aria-expanded': 'true'
+                    }).append('Действия').append('<span>', {'class': 'caret'})
+                )
+                .append(actionsList)
+        );
+
+        var imageBlock = $('<div>', {'class': 'image-block'});
+        imageBlock.append(imgBlock);
+        imageBlock.append(actionsBlock);
+
+        return imageBlock;
     },
 
     parseCategoryIds: function(pageContents) {

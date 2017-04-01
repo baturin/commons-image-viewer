@@ -138,6 +138,7 @@ commonsApi = {
                     }
                     var imageInfo = firstPage.imageinfo[0];
                     onSuccess({
+                        'image': image,
                         'thumb': imageInfo.thumburl,
                         'url': imageInfo.url
                     });

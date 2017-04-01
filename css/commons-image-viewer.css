@@ -18,3 +18,12 @@
     font-size: 8pt;
     height: 200px;
 }
+.image-block {
+    padding: 5px;
+    width: 210px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+}
