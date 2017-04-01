@@ -1,6 +1,8 @@
 #page-contents-block {
     display: flex;
     flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
 }
 #left-block {
     padding: 20px;
@@ -10,6 +12,16 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+#favorites-block {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+}
+favorite-images {
+    display: flex;
+    flex-direction: row;
 }
 #log {
     background-color: black;

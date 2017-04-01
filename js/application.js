@@ -7,7 +7,15 @@ application = {
     _paginationListItems: {},
 
     init: function() {
+        var self = this;
         this.bindHandlers();
+        favoritesStorage.init();
+
+        commonsApi.getImagesInfo(favoritesStorage.getAll(), function(imagesInfo) {
+            imagesInfo.forEach(function(imageInfo) {
+                self.addToFavorites(imageInfo);
+            })
+        });
     },
 
     bindHandlers: function() {
@@ -264,7 +272,7 @@ application = {
                     var itemNum = row * self._itemsPerRow + col;
                     if (imagesInfo.length > itemNum) {
                         var imageInfo = imagesInfo[itemNum];
-                        var imageElement = self.createImageElement(imageInfo);
+                        var imageElement = self.createImageElement(imageInfo, false);
                         rowElem.append(imageElement);
                     }
                 }
@@ -272,7 +280,16 @@ application = {
         });
     },
 
-    createImageElement: function(imageInfo) {
+    addToFavorites: function(imageInfo) {
+        var imageElement = this.createImageElement(imageInfo, true);
+        $('#favorite-images').append(imageElement);
+    },
+
+    createImageElement: function(imageInfo, favor) {
+        var self = this;
+
+        var imageBlock = $('<div>', {'class': 'image-block'});
+
         var commonsUrl = 'https://commons.wikimedia.org/wiki/' + imageInfo.image;
         var imgBlock = $('<div>');
         var link = $('<a>', {'href': commonsUrl, 'target': '_blank'});
@@ -295,9 +312,31 @@ application = {
             }
         ];
 
+        if (favor) {
+            actions.push(
+                {
+                    title: 'Убрать из избранных',
+                    action: function() {
+                        favoritesStorage.remove(imageInfo.image);
+                        imageBlock.remove();
+                    }
+                }
+            )
+        } else {
+            actions.push(
+                {
+                    title: 'Добавить в избранные',
+                    action: function() {
+                        favoritesStorage.add(imageInfo.image);
+                        self.addToFavorites(imageInfo);
+                    }
+                }
+            )
+        }
+
         var actionsList = $('<ul>', {'class': 'dropdown-menu', 'style': 'font-size: 12px;'});
         actions.forEach(function(action) {
-            var actionListItemLink = $('<a>', {'href': '#'}).append(action.title);
+            var actionListItemLink = $('<a>', {'href': 'javascript:;'}).append(action.title);
             actionListItemLink.click(function() {action.action();});
             var actionListItem = $('<li>').append(actionListItemLink);
             actionsList.append(actionListItem);
@@ -317,7 +356,6 @@ application = {
                 .append(actionsList)
         );
 
-        var imageBlock = $('<div>', {'class': 'image-block'});
         imageBlock.append(imgBlock);
         imageBlock.append(actionsBlock);
 
@@ -353,3 +391,57 @@ $.when($.ready).then(function() {
     log.init();
     application.init();
 });
+
+favoritesStorage = {
+    init: function() {
+        this._images = [];
+        this._load();
+
+    },
+
+    add: function(image) {
+        this._images.push(image);
+        this._store();
+    },
+
+    remove: function(image) {
+        var index = this._images.indexOf(image);
+
+        while (index >= 0) {
+            this._images.splice(index, 1);
+            index = this._images.indexOf(image);
+        }
+
+        this._store();
+    },
+
+    getAll: function() {
+        return this._images;
+    },
+
+    _load: function() {
+        if (window.localStorage) {
+            try {
+                this._images = JSON.parse(window.localStorage.getItem("favorites"));
+                if(!$.isArray(this._images)) {
+                    this._images = [];
+                }
+            } catch (e) {
+                // do not fail whole application in case of any error with local storage cache,
+                // for example if it is full
+                this._images = [];
+            }
+        }
+    },
+
+    _store: function() {
+        if (window.localStorage) {
+            try {
+                window.localStorage.setItem("favorites", JSON.stringify(this._images));
+            } catch (e) {
+                // do not fail whole application in case of any error with local storage cache,
+                // for example if it is full
+            }
+        }
+    }
+};
