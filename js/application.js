@@ -28,6 +28,7 @@ application = {
                     }
                 }),
                 function() {
+                    self._currentImages = uniq(self._currentImages);
                     self._updatePaginator();
                     self.setPage(0);
                 }
